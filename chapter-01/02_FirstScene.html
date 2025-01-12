@@ -27,18 +27,24 @@
         // 브라우저가 페이지 로드 후 실행할 함수 정의
         function init() {
             // 1. Three.js 장면 생성
-            // 3D 객체와 카메라, 조명을 배치할 공간을 만듭니다.
+            /* scene 객체
+            : 렌더링할 모든 객체와 사용할 모든 광원을 저장하는 컨테이너
+            : 3D 객체와 카메라, 조명을 배치할 공간을 만든다.
+            : THREE.Scene 객체 없이 Three.js는 아무것도 렌더링할 수 없다.*/
             var scene = new THREE.Scene();
 
             // 2. 카메라 생성
-            // PerspectiveCamera: 원근법 기반 카메라를 생성.
-            // (시야각, 화면 비율, 근경, 원경)
+            /* PerspectiveCamera
+            : 원근법 기반 카메라 생성 (시야각, 화면 비율, 근경, 원경)
+            : camera 객체는 장면을 렌더링했을 때 어떻게 보여질 것인지를 정의한다.*/
             var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
             // 3. 렌더러 생성    
-            // WebGLRenderer는 브라우저에서 WebGL을 사용해 3D 장면을 렌더링.
+            /* WebGLRenderer > 렌더링하는 데 그래픽 카드 사용
+            : 브라우저에서 WebGL을 사용해 3D 장면을 렌더링.
+            : renderer 객체는 scene 객체가 camera 객체의 각도에 따라 브라우저에서 어떻게 보이는지 산출하는 역할 담당 */
             var renderer = new THREE.WebGLRenderer();
-            renderer.setClearColor(new THREE.Color(0xEEEEEE));          // 배경색 설정
+            renderer.setClearColor(new THREE.Color(0xEEEEEE));          // 배경색 설정: 거의 흰색
             renderer.setSize(window.innerWidth, window.innerHeight);    // 렌더러 크기를 브라우저 창 크기로 설정
 
             // 4. 화면에 축(Axis)을 표시
@@ -48,13 +54,13 @@
 
             // 5. 바닥 평면 생성
             // PlaneGeometry: 평면 형태의 기하학 객체 생성
-            var planeGeometry = new THREE.PlaneGeometry(60, 20);                    // 너비 60, 높이 20
+            var planeGeometry = new THREE.PlaneGeometry(60, 20);                    // 평면 너비 60, 높이 20
             var planeMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc });   // 평면 색상
             var plane = new THREE.Mesh(planeGeometry, planeMaterial);               // 평면을 Mesh로 생성
 
             // 평면 회전 및 위치 조정
-            plane.rotation.x = -0.5 * Math.PI;  // 평면을 수직으로 회전
-            plane.position.set(15, 0, 0);  // 위치 설정: X=15, Y=0, Z=0
+            plane.rotation.x = -0.5 * Math.PI;  // 평면을 x축으로 90도 회전
+            plane.position.set(15, 0, 0);       // 위치 설정: X=15, Y=0, Z=0
 
             // 평면을 장면에 추가
             scene.add(plane);

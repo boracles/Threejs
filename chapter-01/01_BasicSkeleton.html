@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- 이 문서는 HTML5 문서임을 선언-->
+
+<html>
+
+<head>
+    <title>Chapter01_01_Basicskeleton</title>
+    <!-- HTML 문서의 제목을 설정. 브라우저 탭에서 보이는 이름-->
+
+    <!-- Three.js 라이브러리를 외부에서 가져옴 -->
+    <!-- "../libs/three.js"는 three.js 파일이 있는 경로를 나타냄 -->
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <style>
+        body {
+            /* CSS 스타일 설정 */
+            margin: 0;
+            /* 스크롤이 보이지 않도록 설정 (overflow: hidden) */
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 실제로 3D 렌더링 출력이 될 부분을 나타냄 -->
+    <!-- JavaScript에서 이 id="WebGL-output"을 선택하여 3D 화면을 표시할 공간으로 사용 -->
+    <div id="WebGL-output">
+    </div>
+
+    <!-- Javascript 코드를 작성하는 부분 -->
+    <script type="text/javascript">
+
+        // 웹페이지의 모든 내용이 로드된 후 실행되는 함수 정의
+        function init() {
+            // Three.js와 관련된 설정 및 작업이 여기 추가될 예정
+        }
+
+        // 브라우저가 웹페이지를 완전히 로드한 후 init() 함수 실행
+        window.onload = init
+
+    </script>
+</body>
+
+</html>

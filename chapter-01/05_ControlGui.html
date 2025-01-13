@@ -40,7 +40,7 @@
 
             // WebGL 렌더러 생성 및 설정
             var renderer = new THREE.WebGLRenderer();
-            renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+            renderer.setClearColor(new THREE.Color(0x020202, 1.0));
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMapEnabled = true;                       // 그림자 활성화
 
@@ -54,32 +54,32 @@
             scene.add(plane);
 
             // 큐브 생성
-            var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-            var cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });  // 빨간색 Lambert 재질
-            var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-            cube.castShadow = true;                                                 // 그림자 생성 활성화
-            cube.position.set(-4, 3, 0);
+            const cubeGeometry = new THREE.BoxGeometry(7, 7, 7);
+            const cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xA33D1C });    // 빨간색 Lambert 재질
+            const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cube.castShadow = true;                                                     // 그림자 생성 활성화
+            cube.position.set(1, 7, 0);                                                // 위치 설정
             scene.add(cube);
 
             // 구체 생성
-            var sphereGeometry = new THREE.SphereGeometry(4, 20, 20);
-            var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x7777ff });    // 파란색 Lambert 재질
-            var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            const sphereGeometry = new THREE.SphereGeometry(4, 20, 20);
+            const sphereMaterial = new THREE.MeshLambertMaterial({ color: 0xC6A66D });  // 파란색 Lambert 재질
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             sphere.castShadow = true;                                                   // 그림자 생성 활성화
-            sphere.position.set(20, 0, 2);
+            sphere.position.set(25, 1, 0);                                              // 위치 설정
             scene.add(sphere);
 
             // 카메라 설정 및 위치 지정
-            camera.position.set(-30, 40, 30);
-            camera.lookAt(scene.position);
+            camera.position.set(15, 15, 100);
+            camera.lookAt(new THREE.Vector3(15, 2, 0));
 
             // 주변광 추가 (약간의 은은한 조명 효과)
             var ambientLight = new THREE.AmbientLight(0x0c0c0c);
             scene.add(ambientLight);
 
             // 스포트라이트 추가 (그림자 생성)
-            var spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.position.set(-40, 60, -10);
+            const spotLight = new THREE.SpotLight(0xFFFBF4);
+            spotLight.position.set(-40, 60, 30);
             spotLight.castShadow = true;
             scene.add(spotLight);
 
@@ -97,8 +97,8 @@
 
             // dat.GUI를 사용한 인터페이스 추가
             var gui = new dat.GUI();
-            gui.add(controls, 'rotationSpeed', 0, 0.5); // 회전 속도 슬라이더
-            gui.add(controls, 'bouncingSpeed', 0, 0.5); // 바운싱 속도 슬라이더
+            gui.add(controls, 'rotationSpeed', 0, 0.1); // 회전 속도 슬라이더
+            gui.add(controls, 'bouncingSpeed', 0, 0.3); // 바운싱 속도 슬라이더
 
             // 렌더링 함수 정의
             function render() {
@@ -110,8 +110,9 @@
 
                 // 구체 바운싱 애니메이션
                 step += controls.bouncingSpeed;
-                sphere.position.x = 20 + (10 * (Math.cos(step)));
-                sphere.position.y = 2 + (10 * Math.abs(Math.sin(step)));
+                sphere.position.x = 25 + (10 * (Math.cos(step)));
+                sphere.position.y = 3 + (10 * Math.abs(Math.sin(step)));
+                sphere.position.z = 1 + 10 * Math.sin(step);
 
                 // 다음 프레임 요청
                 requestAnimationFrame(render);

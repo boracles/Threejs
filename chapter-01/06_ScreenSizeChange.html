@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Chapter01_06_ScreenSizeChange</title>
+    <!-- 필요한 Three.js 및 관련 라이브러리 포함 -->
+    <script type="text/javascript" src="../libs/three.js"></script>
+    <script type="text/javascript" src="../libs/stats.js"></script>
+    <script type="text/javascript" src="../libs/dat.gui.js"></script>
+    <style>
+        body {
+            /* 여백을 없애고 전체 화면 렌더링 설정 */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 성능 모니터링 도구 Stats.js 출력 영역 -->
+    <div id="Stats-output"></div>
+    <!-- WebGL 렌더링 출력 영역 -->
+    <div id="WebGL-output"></div>
+
+    <script type="text/javascript">
+        // 전역 변수 선언
+        var camera;
+        var scene;
+        var renderer;
+
+        // 초기화 함수 정의
+        function init() {
+
+            var stats = initStats();    // 성능 모니터링 초기화
+
+            // Three.js 장면 생성
+            scene = new THREE.Scene();
+
+            // 카메라 생성 및 설정
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            // 시야각(FOV), 화면 비율(aspect ratio), 가까운 클리핑 면, 먼 클리핑 면
+
+            // WebGL 렌더러 생성 및 설정
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));     // 배경색 설정
+            renderer.setSize(window.innerWidth, window.innerHeight);    // 화면 크기 설정
+            renderer.shadowMapEnabled = true;                           // 그림자 활성화
+
+            // 바닥 평면 생성
+            var planeGeometry = new THREE.PlaneGeometry(60, 20);
+            var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.receiveShadow = true;         // 그림자 수신 설정
+            plane.rotation.x = -Math.PI / 2;    // 바닥 평면처럼 보이도록 90도 회전
+            plane.position.set(15, 0, 0);       // 위치 설정
+            scene.add(plane);
+
+            // 큐브 생성
+            var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
+            var cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });  // 빨간색 Lambert 재질
+            var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cube.castShadow = true;                                                 // 그림자 생성 활성화
+            cube.position.set(-4, 3, 0);
+            scene.add(cube);
+
+            // 구체 생성
+            var sphereGeometry = new THREE.SphereGeometry(4, 20, 20);
+            var sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x7777ff });    // 파란색 Lambert 재질
+            var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.castShadow = true;                                                   // 그림자 생성 활성화
+            sphere.position.set(20, 0, 2);                                              // 위치 설정
+            scene.add(sphere);
+
+            // 카메라 위치 설정 및 장면 중심을 바라보도록 설정
+            camera.position.set(-30, 40, 30);
+            camera.lookAt(scene.position);
+
+            // 주변광 추가 (부드러운 조명 효과)
+            var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+            scene.add(ambientLight);
+
+            // 스포트라이트 추가 (그림자 생성)
+            var spotLight = new THREE.SpotLight(0xffffff);
+            spotLight.position.set(-40, 60, -10);
+            spotLight.castShadow = true;
+            scene.add(spotLight);
+
+            // 렌더링 출력 영역을 HTML 요소에 추가
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+            // 애니메이션 상태 변수 초기화
+            var step = 0;
+
+            // 컨트롤 객체 생성
+            var controls = new function () {
+                this.rotationSpeed = 0.02;  // 큐브 회전 속도
+                this.bouncingSpeed = 0.03;  // 구체 바운싱 속도
+            };
+            // dat.GUI를 사용해 인터페이스 생성
+            var gui = new dat.GUI();
+            gui.add(controls, 'rotationSpeed', 0, 0.5); // 회전 속도 조정
+            gui.add(controls, 'bouncingSpeed', 0, 0.5); // 바운싱 속도 조정
+
+            // 렌더링 루프 정의
+            function render() {
+                stats.update(); // 성능 정보 업데이트
+                // 큐브 회전 애니메이션
+                cube.rotation.x += controls.rotationSpeed;
+                cube.rotation.y += controls.rotationSpeed;
+                cube.rotation.z += controls.rotationSpeed;
+
+                // 구체 바운싱 애니메이션
+                step += controls.bouncingSpeed;
+                sphere.position.x = 20 + (10 * (Math.cos(step)));
+                sphere.position.y = 2 + (10 * Math.abs(Math.sin(step)));
+
+                // 다음 프레임 요청
+                requestAnimationFrame(render);
+                renderer.render(scene, camera);
+            }
+            // 성능 모니터링 초기화 함수
+            function initStats() {
+
+                var stats = new Stats();
+
+                stats.setMode(0); // FPS 모드
+                stats.domElement.style.position = 'absolute';
+                stats.domElement.style.left = '0px';
+                stats.domElement.style.top = '0px';
+
+                document.getElementById("Stats-output").appendChild(stats.domElement);
+
+                return stats;
+            }
+            // 렌더링 시작
+            render();
+        }
+        // 화면 크기 변경 이벤트 핸들러
+        function onResize() {
+            camera.aspect = window.innerWidth / window.innerHeight; // 카메라 종횡비 업데이트
+            camera.updateProjectionMatrix();                        // 투영 행렬 업데이트
+            renderer.setSize(window.innerWidth, window.innerHeight);// 렌더러 크기 업데이트
+        }
+
+        // 페이지 로드 후 초기화 함수 실행
+        window.onload = init;
+
+        // 화면 크기 변경 이벤트 리스너 등록
+        window.addEventListener('resize', onResize, false);
+
+    </script>
+</body>
+
+</html>

@@ -3,106 +3,106 @@
 <html>
 
 <head>
-    <title>Example 01.03 - Materials and light</title>
+    <title>Chapter01_03_MaterialsandLight</title>
+    <!-- Three.js 라이브러리를 포함합니다. -->
     <script type="text/javascript" src="../libs/three.js"></script>
+    <!-- 성능 모니터링을 위한 stats.js 라이브러리를 포함합니다. -->
     <script type="text/javascript" src="../libs/stats.js"></script>
+    <!-- 사용자 인터페이스를 위한 dat.GUI 라이브러리를 포함합니다. -->
     <script type="text/javascript" src="../libs/dat.gui.js"></script>
     <style>
         body {
-            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            /* 페이지의 여백을 없애고 스크롤이 나타나지 않도록 설정 */
             margin: 0;
             overflow: hidden;
         }
     </style>
 </head>
+
 <body>
 
-<!-- Div which will hold the Output -->
-<div id="WebGL-output">
-</div>
+    <!-- WebGL 출력 영역을 위한 Div 요소 -->
+    <div id="WebGL-output"></div>
 
-<!-- Javascript code that runs our Three.js examples -->
-<script type="text/javascript">
+    <!-- Three.js 예제를 실행하는 자바스크립트 코드 -->
+    <script type="text/javascript">
 
-    // once everything is loaded, we run our Three.js stuff.
-    function init() {
+        // 모든 것이 로드된 후 Three.js 초기화 코드 실행
+        function init() {
 
-        // create a scene, that will hold all our elements such as objects, cameras and lights.
-        var scene = new THREE.Scene();
+            // 장면(Scene)을 생성합니다. 이 장면은 모든 객체, 카메라, 조명을 포함합니다.
+            const scene = new THREE.Scene();
 
-        // create a camera, which defines where we're looking at.
-        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            // 카메라를 생성합니다. 이 카메라는 우리가 무엇을 볼지 정의합니다.
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-        // create a render and set the size
-        var renderer = new THREE.WebGLRenderer();
+            // 렌더러를 생성하고 크기를 설정합니다. 렌더러 생성 시 antialias: true 옵션을 추가하여 렌더링 품질 개선.
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
 
-        renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMapEnabled = true;
+            // 배경색과 투명도를 설정합니다.
+            renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            // 그림자 맵핑을 활성화합니다.
+            renderer.shadowMapEnabled = true;
 
-        // create the ground plane
-        var planeGeometry = new THREE.PlaneGeometry(60, 20);
-        var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff});
-        var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-        plane.receiveShadow = true;
+            // 평면(ground plane)을 생성합니다.
+            const planeGeometry = new THREE.PlaneGeometry(60, 20);
+            const planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });   // Lambert 재질 사용
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.receiveShadow = true;                                                 // 그림자를 받을 수 있도록 설정
 
-        // rotate and position the plane
-        plane.rotation.x = -0.5 * Math.PI;
-        plane.position.x = 15;
-        plane.position.y = 0;
-        plane.position.z = 0;
+            // 평면을 회전 및 위치 설정합니다.
+            plane.rotation.x = -Math.PI / 2;  // x축으로 90도 회전
+            plane.position.set(15, 0, 0);
 
-        // add the plane to the scene
-        scene.add(plane);
+            // 장면에 평면을 추가합니다.
+            scene.add(plane);
 
-        // create a cube
-        var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-        var cubeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        cube.castShadow = true;
+            // 큐브를 생성합니다.
+            const cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
+            const cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });    // 빨간색 Lambert 재질
+            const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            cube.castShadow = true;                                                     // 그림자를 생성할 수 있도록 설정
 
-        // position the cube
-        cube.position.x = -4;
-        cube.position.y = 3;
-        cube.position.z = 0;
+            // 큐브의 위치를 설정합니다.
+            cube.position.set(-4, 3, 0);
 
-        // add the cube to the scene
-        scene.add(cube);
+            // 장면에 큐브를 추가합니다.
+            scene.add(cube);
 
-        var sphereGeometry = new THREE.SphereGeometry(4, 20, 20);
-        var sphereMaterial = new THREE.MeshLambertMaterial({color: 0x7777ff});
-        var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            // 구체를 생성합니다.
+            const sphereGeometry = new THREE.SphereGeometry(4, 20, 20);                   // 구체의 세부 분할 설정
+            const sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x7777ff });    // 파란색 Lambert 재질
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.castShadow = true;   // 그림자를 생성할 수 있도록 설정
 
-        // position the sphere
-        sphere.position.x = 20;
-        sphere.position.y = 4;
-        sphere.position.z = 2;
-        sphere.castShadow = true;
+            // 구체의 위치를 설정합니다.
+            sphere.position.set(20, 4, 2);
 
-        // add the sphere to the scene
-        scene.add(sphere);
+            // 장면에 구체를 추가합니다.
+            scene.add(sphere);
 
-        // position and point the camera to the center of the scene
-        camera.position.x = -30;
-        camera.position.y = 40;
-        camera.position.z = 30;
-        camera.lookAt(scene.position);
+            // 카메라의 위치를 설정하고 장면의 중심을 바라보도록 설정합니다.
+            camera.position.set(-30, 40, 30);
+            camera.lookAt(scene.position);
 
-        // add spotlight for the shadows
-        var spotLight = new THREE.SpotLight(0xffffff);
-        spotLight.position.set(-40, 60, -10);
-        spotLight.castShadow = true;
-        scene.add(spotLight);
+            // 그림자를 위한 스포트라이트를 추가합니다.
+            const spotLight = new THREE.SpotLight(0xffffff);    // 흰색 스포트라이트
+            spotLight.position.set(-40, 60, -10);               // 스포트라이트의 위치 설정
+            spotLight.castShadow = true;                        // 그림자 생성 활성화
+            scene.add(spotLight);
 
-        // add the output of the renderer to the html element
-        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+            // 렌더러의 출력 결과를 HTML 요소에 추가합니다.
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-        // call the render function
-        renderer.render(scene, camera);
-    }
-    window.onload = init;
+            // 장면과 카메라를 렌더링합니다.
+            renderer.render(scene, camera);
+        }
+        // 브라우저가 로드되면 init 함수 실행
+        window.onload = init;
 
 
-</script>
+    </script>
 </body>
+
 </html>

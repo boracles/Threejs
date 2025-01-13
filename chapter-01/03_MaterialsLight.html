@@ -47,7 +47,7 @@
 
             // 평면(ground plane)을 생성합니다.
             const planeGeometry = new THREE.PlaneGeometry(60, 20);
-            const planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });   // Lambert 재질 사용
+            const planeMaterial = new THREE.MeshLambertMaterial({ color: 0xD7D7D7 });   // Lambert 재질 사용
             const plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.receiveShadow = true;                                                 // 그림자를 받을 수 있도록 설정
 
@@ -59,36 +59,36 @@
             scene.add(plane);
 
             // 큐브를 생성합니다.
-            const cubeGeometry = new THREE.BoxGeometry(4, 4, 4);
-            const cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xff0000 });    // 빨간색 Lambert 재질
+            const cubeGeometry = new THREE.BoxGeometry(7, 7, 7);
+            const cubeMaterial = new THREE.MeshLambertMaterial({ color: 0xCA4242 });    // 빨간색 Lambert 재질
             const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
             cube.castShadow = true;                                                     // 그림자를 생성할 수 있도록 설정
 
             // 큐브의 위치를 설정합니다.
-            cube.position.set(-4, 3, 0);
+            cube.position.set(1, 3, 0);
 
             // 장면에 큐브를 추가합니다.
             scene.add(cube);
 
             // 구체를 생성합니다.
             const sphereGeometry = new THREE.SphereGeometry(4, 20, 20);                   // 구체의 세부 분할 설정
-            const sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x7777ff });    // 파란색 Lambert 재질
+            const sphereMaterial = new THREE.MeshLambertMaterial({ color: 0x2672CA });    // 파란색 Lambert 재질
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             sphere.castShadow = true;   // 그림자를 생성할 수 있도록 설정
 
             // 구체의 위치를 설정합니다.
-            sphere.position.set(20, 4, 2);
+            sphere.position.set(26, 4, 2);
 
             // 장면에 구체를 추가합니다.
             scene.add(sphere);
 
             // 카메라의 위치를 설정하고 장면의 중심을 바라보도록 설정합니다.
-            camera.position.set(-30, 40, 30);
-            camera.lookAt(scene.position);
+            camera.position.set(15, 15, 100);
+            camera.lookAt(new THREE.Vector3(15, 2, 0));
 
             // 그림자를 위한 스포트라이트를 추가합니다.
             const spotLight = new THREE.SpotLight(0xffffff);    // 흰색 스포트라이트
-            spotLight.position.set(-40, 60, -10);               // 스포트라이트의 위치 설정
+            spotLight.position.set(-40, 60, 30);                // 스포트라이트의 위치 설정
             spotLight.castShadow = true;                        // 그림자 생성 활성화
             scene.add(spotLight);
 

@@ -44,18 +44,13 @@
             : 브라우저에서 WebGL을 사용해 3D 장면을 렌더링.
             : renderer 객체는 scene 객체가 camera 객체의 각도에 따라 브라우저에서 어떻게 보이는지 산출하는 역할 담당 */
             var renderer = new THREE.WebGLRenderer();
-            renderer.setClearColor(new THREE.Color(0xEEEEEE));          // 배경색 설정: 거의 흰색
+            renderer.setClearColor(new THREE.Color(0xFFFFFF));          // 배경색 설정
             renderer.setSize(window.innerWidth, window.innerHeight);    // 렌더러 크기를 브라우저 창 크기로 설정
 
-            // 4. 화면에 축(Axis)을 표시
-            // 축 헬퍼를 사용하여 X, Y, Z 축을 시각적으로 표시
-            var axes = new THREE.AxisHelper(20);            // 축 길이: 20
-            scene.add(axes);                                // 장면에 추가
-
-            // 5. 바닥 평면 생성
+            // 4. 바닥 평면 생성
             // PlaneGeometry: 평면 형태의 기하학 객체 생성
             var planeGeometry = new THREE.PlaneGeometry(60, 20);                    // 평면 너비 60, 높이 20
-            var planeMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc });   // 평면 색상
+            var planeMaterial = new THREE.MeshBasicMaterial({ color: 0xECECEC });   // 평면 색상
             var plane = new THREE.Mesh(planeGeometry, planeMaterial);               // 평면을 Mesh로 생성
 
             // 평면 회전 및 위치 조정
@@ -65,38 +60,38 @@
             // 평면을 장면에 추가
             scene.add(plane);
 
-            // 6. 큐브 생성
+            // 5. 큐브 생성
             // BoxGeometry: 정육면체 형태의 기하학 객체 생성
-            var cubeGeometry = new THREE.BoxGeometry(4, 4, 4);                                      // 크기: 가로 4, 세로 4, 높이 4
-            var cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });   // 빨간색, 와이어프레임
+            var cubeGeometry = new THREE.BoxGeometry(7, 7, 7);
+            var cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xCA4242, wireframe: true });   // 빨간색, 와이어프레임
             var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 
             // 큐브 위치 설정
-            cube.position.set(-4, 3, 0);    // X=-4, Y=3, Z=0
+            cube.position.set(0, 4, 0);
 
             // 큐브를 장면에 추가
             scene.add(cube);
 
-            // 7. 구(Sphere) 생성
+            // 6. 구(Sphere) 생성
             // SphereGeometry: 구 형태의 기하학 객체 생성
             var sphereGeometry = new THREE.SphereGeometry(4, 20, 20);                               // 반지름: 4, 분할: 20x20
-            var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x7777ff, wireframe: true }); // 파란색, 와이어프레임
+            var sphereMaterial = new THREE.MeshBasicMaterial({ color: 0x2672CA, wireframe: true }); // 파란색, 와이어프레임
             var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
             // 구 위치 설정
-            sphere.position.set(20, 4, 2); // X=20, Y=4, Z=2
+            sphere.position.set(28, 4, 2); // X=20, Y=4, Z=2
 
             // 구를 장면에 추가
             scene.add(sphere);
 
-            // 8. 카메라 위치 및 장면 중앙을 바라보도록 설정
-            camera.position.set(-30, 40, 30);       // X=-30, Y=40, Z=30
-            camera.lookAt(scene.position);          // 장면의 중심을 바라봄
+            // 7. 카메라 위치 및 장면 중앙을 바라보도록 설정
+            camera.position.set(15, 15, 100);
+            camera.lookAt(new THREE.Vector3(15, 2, 0));
 
-            // 9. 렌더러를 HTML의 "WebGL-output" <div>에 추가
+            // 8. 렌더러를 HTML의 "WebGL-output" <div>에 추가
             document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-            // 10. 장면을 렌더링
+            // 9. 장면을 렌더링
             renderer.render(scene, camera);         // 장면(scene)을 카메라(camera) 관점에서 렌더링
         }
         // 페이지 로드 후 init 함수 호출

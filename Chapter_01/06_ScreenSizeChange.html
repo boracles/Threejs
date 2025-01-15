@@ -122,37 +122,13 @@
             }
             // 성능 모니터링 초기화 함수
             function initStats() {
-                const stats = new Stats();
+
+                var stats = new Stats();
                 stats.setMode(0); // FPS 모드
                 stats.domElement.style.position = 'absolute';
-                stats.domElement.style.left = '10px';
-                stats.domElement.style.top = '10px';
+                stats.domElement.style.left = '0px';
+                stats.domElement.style.top = '0px';
                 document.getElementById("Stats-output").appendChild(stats.domElement);
-
-                // FPS 텍스트 색상 및 폰트 스타일 수정
-                const fpsText = stats.domElement.querySelector('#fpsText');
-                if (fpsText) {
-                    fpsText.style.color = '#020202'; // 텍스트 색상
-                    fpsText.style.fontFamily = 'Pretendard, sans-serif'; // 폰트 스타일
-                    fpsText.style.fontSize = '14px'; // 폰트 크기
-                }
-
-                // FPS 배경색 수정
-                const fpsDiv = stats.domElement.querySelector('#fps');
-                if (fpsDiv) {
-                    fpsDiv.style.backgroundColor = '#B5B4A2'; // 배경색
-                }
-
-                // FPS 그래프 색상 변경
-                const fpsGraph = stats.domElement.querySelector('#fpsGraph');
-                if (fpsGraph) {
-                    fpsGraph.style.backgroundColor = '#C6A66D';
-                    const fpsBars = fpsGraph.children;
-                    for (let i = 0; i < fpsBars.length; i++) {
-                        fpsBars[i].style.backgroundColor = '#A33D1C'; // 막대 색상
-                    }
-                }
-
                 return stats;
             }
             // 렌더링 시작

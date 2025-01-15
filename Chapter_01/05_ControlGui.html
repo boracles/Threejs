@@ -46,7 +46,7 @@
 
             // 바닥 평면 생성
             var planeGeometry = new THREE.PlaneGeometry(60, 20);
-            var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xB5B4A2 });
             var plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.receiveShadow = true;         // 그림자 수신 설정
             plane.rotation.x = -Math.PI / 2;    // 평면을 90도 회전하여 바닥처럼 보이게 함

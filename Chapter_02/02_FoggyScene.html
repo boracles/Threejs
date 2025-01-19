@@ -58,7 +58,7 @@
             const ambientLight = new THREE.AmbientLight(0x797059, 0.8); // 은은한 주변광
             scene.add(ambientLight);
 
-            const pointLight = new THREE.PointLight(0xffffff, 3000, 2000); 
+            const pointLight = new THREE.PointLight(0xffffff, 3000, 2000);
             pointLight.position.set(0, 10, -5); // 플레인 위쪽에서 비추도록 설정
             pointLight.castShadow = true;
 
@@ -66,35 +66,35 @@
             pointLight.shadow.mapSize.height = 1024;
             pointLight.shadow.camera.near = 0.1; // 그림자 시작 거리
             pointLight.shadow.camera.far = 100;  // 그림자 끝 거리
-            
+
             scene.add(pointLight);
 
             // 그림자를 시각적으로 확인할 수 있도록 PointLightHelper 추가
             const pointLightHelper = new THREE.PointLightHelper(pointLight, 5);
             scene.add(pointLightHelper);
-/*
-// 디렉셔널 라이트 생성
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // 색상, 강도
-directionalLight.position.set(0, 20, 10); // 빛의 위치 설정
-directionalLight.castShadow = true; // 그림자 활성화
-
-// 그림자 설정
-directionalLight.shadow.mapSize.width = 1024; // 그림자 맵 해상도
-directionalLight.shadow.mapSize.height = 1024;
-directionalLight.shadow.camera.near = 0.1; // 그림자 시작 거리
-directionalLight.shadow.camera.far = 50; // 그림자 끝 거리
-directionalLight.shadow.camera.left = -20; // 그림자 카메라 영역(좌)
-directionalLight.shadow.camera.right = 20; // 그림자 카메라 영역(우)
-directionalLight.shadow.camera.top = 20; // 그림자 카메라 영역(상)
-directionalLight.shadow.camera.bottom = -20; // 그림자 카메라 영역(하)
-
-// 디렉셔널 라이트 추가
-scene.add(directionalLight);
-
-// 디렉셔널 라이트 헬퍼 추가 (디버깅용)
-const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // 크기 5
-scene.add(directionalLightHelper);
-*/
+            /*
+            // 디렉셔널 라이트 생성
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // 색상, 강도
+            directionalLight.position.set(0, 20, 10); // 빛의 위치 설정
+            directionalLight.castShadow = true; // 그림자 활성화
+            
+            // 그림자 설정
+            directionalLight.shadow.mapSize.width = 1024; // 그림자 맵 해상도
+            directionalLight.shadow.mapSize.height = 1024;
+            directionalLight.shadow.camera.near = 0.1; // 그림자 시작 거리
+            directionalLight.shadow.camera.far = 50; // 그림자 끝 거리
+            directionalLight.shadow.camera.left = -20; // 그림자 카메라 영역(좌)
+            directionalLight.shadow.camera.right = 20; // 그림자 카메라 영역(우)
+            directionalLight.shadow.camera.top = 20; // 그림자 카메라 영역(상)
+            directionalLight.shadow.camera.bottom = -20; // 그림자 카메라 영역(하)
+            
+            // 디렉셔널 라이트 추가
+            scene.add(directionalLight);
+            
+            // 디렉셔널 라이트 헬퍼 추가 (디버깅용)
+            const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // 크기 5
+            scene.add(directionalLightHelper);
+            */
             // 렌더러 DOM 추가
             document.getElementById('WebGL-output').appendChild(renderer.domElement);
 
@@ -115,16 +115,30 @@ scene.add(directionalLightHelper);
                     cube.castShadow = true;
 
                     // 바닥 범위 계산
-                    var planeHalfWidth = planeGeometry.parameters.width / 2; // = 30
-                    var planeHalfHeight = planeGeometry.parameters.height / 2; // = 20
+                    var planeHalfWidth = planeGeometry.parameters.width / 2;
+                    var planeHalfHeight = planeGeometry.parameters.height / 2;
 
-                    // Plane의 실제 위치(plane.position)와 크기를 고려해서 x,z를 설정
-                    cube.position.x = plane.position.x - planeHalfWidth + Math.random() * planeGeometry.parameters.width;
-                    cube.position.z = plane.position.z - planeHalfHeight + Math.random() * planeGeometry.parameters.height;
+                    let x, z;
+                    let distance;
+                    const minDistance = 10;
 
-                    // y좌표를 랜덤하게 설정하되, 바닥(plane)보다 아래로 내려가지 않도록
-                    var centerToCorner = (cubeSize / 2) * Math.sqrt(3);
-                    cube.position.y = centerToCorner + Math.random() * 10;
+                    do {
+                        // 바닥 범위를 고려한 x, z 좌표 생성
+                        x = plane.position.x - planeHalfWidth + Math.random() * planeGeometry.parameters.width;
+                        z = plane.position.z - planeHalfHeight + Math.random() * planeGeometry.parameters.height;
+
+                        // 포인트 라이트와의 거리 계산
+                        distance = Math.sqrt(
+                            Math.pow(x - pointLight.position.x, 2) +
+                            Math.pow(z - pointLight.position.z, 2)
+                        );
+                    } while (distance < minDistance); // 포인트 라이트와의 최소 거리 조건 체크
+
+                    cube.position.x = x;
+                    cube.position.z = z;
+
+                    const centerToCorner = (cubeSize / 2) * Math.sqrt(3);
+                    cube.position.y = centerToCorner + Math.random() * 15;
 
                     scene.add(cube);    // 장면에 큐브 추가
                     this.numberOfObjects = scene.children.length;

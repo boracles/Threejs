@@ -1,13 +1,8 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="en">
 
 <head>
     <title>Chapter02_02_FoggyScene</title>
-    <!-- Three.js 및 관련 라이브러리 포함 -->
-    <script type="text/javascript" src="../libs/three.js"></script>
-    <script type="text/javascript" src="../libs/stats.js"></script>
-    <script type="text/javascript" src="../libs/dat.gui.js"></script>
     <style>
         body {
             margin: 0;
@@ -17,151 +12,130 @@
 </head>
 
 <body>
-
     <!-- 성능 모니터링 도구 Stats.js 출력 영역 -->
     <div id="Stats-output"></div>
     <!-- WebGL 렌더링 출력 영역 -->
     <div id="WebGL-output"></div>
 
-    <script type="text/javascript">
+    <script type="module">
+        import * as THREE from '../libs/three.module.js';
+        import Stats from '../libs/stats.module.js';
+        import { GUI } from '../libs/dat.gui.module.js';
 
         // 초기화 함수 정의
         function init() {
-
-            var stats = initStats();    // FPS 모니터링 초기화
+            const stats = initStats();
 
             // Three.js 장면 생성
-            var scene = new THREE.Scene();
-            // 안개 추가: 선형 안개 설정 (Fog 색상, 근거리, 원거리 );
+            const scene = new THREE.Scene();
             scene.fog = new THREE.Fog(0x020202, 0.015, 100);
 
-            // 카메라 생성 및 설정
-            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-            // WebGL 렌더러 생성 및 설정
-            var renderer = new THREE.WebGLRenderer();
-            renderer.setClearColor(new THREE.Color(0x020202, 1.0));     // 배경색 설정
-            renderer.setSize(window.innerWidth, window.innerHeight);    // 화면 크기 설정
-            renderer.shadowMapEnabled = true;                           // 그림자 활성화
-
-            // 바닥 평면 생성
-            var planeGeometry = new THREE.PlaneGeometry(60, 40, 1, 1);
-            var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xB5B4A2 });
-            var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.receiveShadow = true;                                 // 그림자 수신 활성화
-            plane.rotation.x = -Math.PI / 2;                            // x축 기준 90도 회전
-            scene.add(plane);
-
-            // 카메라 위치 설정 및 장면 중심을 바라보도록 설정
+            // 카메라 생성
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 20, 80);
             camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+            // 렌더러 생성 및 설정
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0x020202));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true; // 그림자 활성화
+
+            // 바닥 평면 생성
+            const planeGeometry = new THREE.PlaneGeometry(60, 40);
+            const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xB5B4A2 });
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.receiveShadow = true;
+            plane.rotation.x = -Math.PI / 2;
+            scene.add(plane);
+
             // 조명 추가
-            var ambientLight = new THREE.AmbientLight(0x0c0c0c);        // 은은한 주변광
+            const ambientLight = new THREE.AmbientLight(0x0c0c0c, 0.2); // 은은한 주변광
             scene.add(ambientLight);
 
-            // PointLight 생성 및 설정
-            var pointLight = new THREE.PointLight(0xfffefb, 15, 80); // 색상, 강도, 거리
-            pointLight.position.set(0, 10, -10);
-            pointLight.castShadow = true; // 그림자 생성 활성화
-
+            const pointLight = new THREE.PointLight(0xffffff, 15, 80); // 강도 1
+            pointLight.position.set(0, 10, -10); // 플레인 위쪽에서 비추도록 설정
+            pointLight.castShadow = true;
             scene.add(pointLight);
 
-            // 점광을 시각적으로 확인할 수 있도록 헬퍼 추가 (디버깅용)
-            var pointLightHelper = new THREE.PointLightHelper(pointLight, 5); // 크기 5
+            // 그림자를 시각적으로 확인할 수 있도록 PointLightHelper 추가
+            const pointLightHelper = new THREE.PointLightHelper(pointLight, 5);
             scene.add(pointLightHelper);
 
-            // 렌더러 출력 결과물 HTML 요소에 추가
-            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+            // 렌더러 DOM 추가
+            document.getElementById('WebGL-output').appendChild(renderer.domElement);
 
-            // 컨트롤 객체 정의
-            var controls = new function () {
-                this.rotationSpeed = 0.02;                              // 큐브 회전 속도
-                this.numberOfObjects = scene.children.length;           // 장면 내 객체 수
+            // 컨트롤 생성
+            const controls = new function () {
+                this.rotationSpeed = 0.02;
+                this.numberOfObjects = scene.children.length;
 
-                // 큐브 제거 함수
+                this.addCube = function () {
+                    const cubeSize = Math.ceil(Math.random() * 3);
+                    const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+                    const cubeMaterial = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                    cube.castShadow = true;
+
+                    // 랜덤 위치 설정
+                    cube.position.set(
+                        -30 + Math.random() * 60,
+                        cubeSize / 2,
+                        -20 + Math.random() * 40
+                    );
+
+                    scene.add(cube);
+                    this.numberOfObjects = scene.children.length;
+                };
+
                 this.removeCube = function () {
-                    var allChildren = scene.children;
-                    var lastObject = allChildren[allChildren.length - 1];
+                    const lastObject = scene.children[scene.children.length - 1];
                     if (lastObject instanceof THREE.Mesh) {
                         scene.remove(lastObject);
                         this.numberOfObjects = scene.children.length;
                     }
                 };
-                // 큐브 추가 함수
-                this.addCube = function () {
-                    var cubeSize = Math.ceil((Math.random() * 3));  // 큐브 크기 랜덤화
-                    var cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-                    var cubeMaterial = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
-                    var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-                    cube.castShadow = true;                         // 그림자 생성 활성화
 
-                    // 바닥 범위 계산
-                    var planeHalfWidth = planeGeometry.parameters.width / 2; // = 30
-                    var planeHalfHeight = planeGeometry.parameters.height / 2; // = 20
-
-                    // Plane의 실제 위치(plane.position)와 크기를 고려해서 x,z를 설정
-                    cube.position.x = plane.position.x - planeHalfWidth + Math.random() * planeGeometry.parameters.width;
-                    cube.position.z = plane.position.z - planeHalfHeight + Math.random() * planeGeometry.parameters.height;
-
-                    // y좌표를 랜덤하게 설정하되, 바닥(plane)보다 아래로 내려가지 않도록
-                    var centerToCorner = (cubeSize / 2) * Math.sqrt(3);
-                    cube.position.y = centerToCorner + Math.random() * 10;
-
-                    scene.add(cube);    // 장면에 큐브 추가
-                    this.numberOfObjects = scene.children.length;
-                };
-
-                // 디버깅용 객체 출력 함수
                 this.outputObjects = function () {
                     console.log(scene.children);
-                }
+                };
             };
 
-            // dat.GUI 인터페이스 추가
-            var gui = new dat.GUI();
-            gui.add(controls, 'rotationSpeed', 0, 0.5);     // 회전 속도 조정 슬라이더
-            gui.add(controls, 'addCube');                   // 큐브 추가 버튼
-            gui.add(controls, 'removeCube');                // 큐브 제거 버튼
-            gui.add(controls, 'outputObjects');             // 객체 출력 버튼
-            gui.add(controls, 'numberOfObjects').listen();  // 객체 수 실시간 업데이트
+            const gui = new GUI();
+            gui.add(controls, 'rotationSpeed', 0, 0.5);
+            gui.add(controls, 'addCube');
+            gui.add(controls, 'removeCube');
+            gui.add(controls, 'outputObjects');
+            gui.add(controls, 'numberOfObjects').listen();
 
             render();
 
-            // 렌더링 루프 정의
+            // 렌더링 함수
             function render() {
-                stats.update(); //FPS 업데이트
+                stats.update();
 
-                // 장면 내 모든 Mesh 객체 회전 애니메이션 적용
-                scene.traverse(function (e) {
-                    if (e instanceof THREE.Mesh && e != plane) {
-
-                        e.rotation.x += controls.rotationSpeed;
-                        e.rotation.y += controls.rotationSpeed;
-                        e.rotation.z += controls.rotationSpeed;
+                scene.traverse((object) => {
+                    if (object instanceof THREE.Mesh && object !== plane) {
+                        object.rotation.x += controls.rotationSpeed;
+                        object.rotation.y += controls.rotationSpeed;
                     }
                 });
 
-                // 다음 프레임 요청 및 렌더링
                 requestAnimationFrame(render);
                 renderer.render(scene, camera);
             }
 
-            // 성능 모니터링 초기화 함수
+            // 성능 모니터링 초기화
             function initStats() {
-
-                var stats = new Stats();
-                stats.setMode(0); // FPS 모드 
-                stats.domElement.style.position = 'absolute';
-                stats.domElement.style.left = '0px';
-                stats.domElement.style.top = '0px';
-                document.getElementById("Stats-output").appendChild(stats.domElement);
+                const stats = new Stats();
+                stats.showPanel(0); // FPS
+                document.getElementById('Stats-output').appendChild(stats.dom);
                 return stats;
             }
         }
 
-        // 초기화 함수 실행
-        window.onload = init
+        // 초기화 실행
+        init();
     </script>
 </body>
 

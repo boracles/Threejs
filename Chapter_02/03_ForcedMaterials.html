@@ -37,10 +37,8 @@
             // 3) 카메라 생성
             //    - PerspectiveCamera(FOV, 종횡비, near, far)
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            //    - 카메라 위치 설정 (x=0, y=20, z=80)
-            camera.position.set(0, 20, 80);
-            //    - 카메라가 (0,0,0) 지점을 바라보게 설정
-            camera.lookAt(new THREE.Vector3(0, 0, 0));
+            camera.position.set(0, 20, 80);             //    - 카메라 위치 설정 (x=0, y=20, z=80)
+            camera.lookAt(new THREE.Vector3(0, 0, 0));  //    - 카메라가 (0,0,0) 지점을 바라보게 설정
 
             // 4) 렌더러(WebGLRenderer) 생성
             const renderer = new THREE.WebGLRenderer();
@@ -78,7 +76,6 @@
             const pointLight = new THREE.PointLight(0xffffff, 180, 2000);
             pointLight.position.set(0, 10, -1);         //    - 위치 설정 (x=0, y=10, z=-1)
             pointLight.castShadow = true;               //    - 그림자 생성 가능하도록 설정
-
             pointLight.shadow.mapSize.width = 1024;     //    - 그림자 해상도 설정(1024 x 1024)
             pointLight.shadow.mapSize.height = 1024;
             pointLight.shadow.camera.near = 0.1;        //    - 그림자를 계산할 카메라 범위

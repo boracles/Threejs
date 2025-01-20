@@ -20,28 +20,32 @@
         import Stats from '../libs/stats.module.js';
         import { GUI } from '../libs/dat.gui.module.js';
         import { ConvexGeometry } from '../libs/ConvexGeometry.js';
-        import * as ParametricGeometries from '../libs/ParametricGeometries.js';
+        import { ParametricGeometry } from '../libs/ParametricGeometry.js';
+        import { ParametricGeometries } from '../libs/ParametricGeometries.js';
 
         function init() {
             var stats = initStats();
 
-            // create a scene, that will hold all our elements such as objects, cameras and lights.
             var scene = new THREE.Scene();
 
             // 카메라 생성
             const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 20, 80);
+            camera.position.set(0, 56, 100);
             camera.lookAt(new THREE.Vector3(0, 0, 0));
 
             // 렌더러 생성
             var renderer = new THREE.WebGLRenderer();
-            renderer.setClearColor(new THREE.Color(0xEEEEEE, 1.0));
+            renderer.setClearColor(new THREE.Color(0x020202));
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
 
             // create the ground plane
             var planeGeometry = new THREE.PlaneGeometry(60, 40, 1, 1);
-            var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            const planeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xB5B4A2,
+                roughness: 1.0, // 1.0이면 가장 거친 표면
+                metalness: 0    // 0이면 비금속
+            });
             var plane = new THREE.Mesh(planeGeometry, planeMaterial);
             plane.receiveShadow = true;
 
@@ -51,19 +55,22 @@
             scene.add(plane);
 
             // Ambient Light (은은한 전체 조명명)
-            var ambientLight = new THREE.AmbientLight(0x090909);
+            const ambientLight = new THREE.AmbientLight(0x090909, 0.8);
             scene.add(ambientLight);
 
             // Spot Light (그림자 생성용 조명)
-            var spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.position.set(-40, 40, 50);
+            const spotLight = new THREE.SpotLight(0xffffff, 800);
+            spotLight.position.set(-40, 30, 36);
+            spotLight.target = plane;
             spotLight.castShadow = true;
             scene.add(spotLight);
+
+            const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+            scene.add(spotLightHelper);
 
             // add geometries
             addGeometries(scene);
 
-            // add the output of the renderer to the html element
             document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
             render();
@@ -72,19 +79,19 @@
                 // 다양한 Geometry를 담을 배열
                 const geoms = [];
 
-                // 1) 원기둥 (Cylinder)
+                // 1. 원기둥 (위, 아래 반지름, 높이, 세그먼트 수)
                 geoms.push(new THREE.CylinderGeometry(1, 4, 4, 8, 1));
 
-                // 2) 큐브 (Box)
+                // 2. 큐브 (x, y, z)
                 geoms.push(new THREE.BoxGeometry(2, 2, 2));
 
-                // 3) 구 (Sphere)
+                // 3. 구 ( 반지름, 가로 세그먼트, 세로 세그먼트)
                 geoms.push(new THREE.SphereGeometry(2, 16, 16));
 
-                // 4) Icosahedron(20면체)
-                geoms.push(new THREE.IcosahedronGeometry(4));
+                // 4. 정20면체 (반지름, 상세 단계(기본 0))
+                geoms.push(new THREE.IcosahedronGeometry(4, 0));
 
-                // 5) ConvexGeometry - 점들을 이용해 볼록 다각형 형상 생성
+                // 5. ConvexGeometry : 점들을 이용해 볼록 다각형 형상 생성
                 var points = [
                     new THREE.Vector3(2, 2, 2),
                     new THREE.Vector3(2, 2, -2),
@@ -95,9 +102,9 @@
                     new THREE.Vector3(-2, -2, -2),
                     new THREE.Vector3(-2, -2, 2)
                 ];
-                geoms.push(new THREE.ConvexGeometry(points));
+                geoms.push(new ConvexGeometry(points));
 
-                // 6) LatheGeometry - 회전 표면
+                // 6. LatheGeometry 회전 표면 : 주어진 점(pts)을 축을 기준으로 회전하여 형상 생성
                 const pts = [];
                 const detail = 0.1;
                 const radius = 3;
@@ -109,18 +116,19 @@
                 }
                 geoms.push(new THREE.LatheGeometry(pts, 12));
 
-                // 7) Octahedron(8면체)
+                // 7 정8면체
                 geoms.push(new THREE.OctahedronGeometry(3));
 
-                // create a geometry based on a function
-                geoms.push(new THREE.ParametricGeometry(THREE.ParametricGeometries.mobius3d, 20, 10));
+                // 8. ParametricGeometry : ParametricGeometries.mobius3d를 이용해 Mobius 형태 만들기
+                geoms.push(new ParametricGeometry(ParametricGeometries.mobius3d, 20, 10));
 
-                //
+                // 9. 정4면체
                 geoms.push(new THREE.TetrahedronGeometry(3));
 
+                // 10. 도넛(반지름, 두께, 세그먼트, 파이 세그먼트)
                 geoms.push(new THREE.TorusGeometry(3, 1, 10, 10));
 
-                // 11) TorusKnot(토러스 매듭)
+                // 11. 토러스 매듭(반지름, 두께, 파이 분할 수, 횡 분할 수)
                 geoms.push(new THREE.TorusKnotGeometry(3, 0.5, 50, 20));
 
                 // 배열 geoms에 담긴 모든 기하체를 장면에 추가
@@ -130,11 +138,13 @@
                     // flatShading: true 를 사용해 면이 뚜렷하게 보이도록
                     const materials = [
                         new THREE.MeshLambertMaterial({
-                            color: Math.random() * 0xffffff,
-                            flatShading: true,
+                            color: Math.random() * 0xffffff,    // 무작위 색상
+                            flatShading: false,                  // 면이 뚜렷하게 보이도록
                         }),
                         new THREE.MeshBasicMaterial({
-                            color: 0x000000,
+                            color: 0x020202,
+                            transparent: true,
+                            opacity: 0.15,
                             wireframe: true,
                         }),
                     ];
@@ -149,8 +159,8 @@
                     });
 
                     // 기하체 배치 (x, z 방향으로 격자 형태)
-                    group.position.x = -24 + ((i % 4) * 12);
-                    group.position.y = 4;
+                    group.position.x = -19 + ((i % 4) * 12);
+                    group.position.y = 5;
                     group.position.z = -8 + (rowIndex * 12);
 
                     if ((i + 1) % 4 === 0) {

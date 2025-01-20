@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Chapter02_03_ForcedMaterials</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* 브라우저 스크롤바 안 나오도록 설정 */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- FPS 측정용 Stats.js의 DOM을 추가할 영역 -->
+    <div id="Stats-output"></div>
+    <!-- Three.js의 렌더링 결과(WebGL) DOM을 추가할 영역 -->
+    <div id="WebGL-output"></div>
+
+    <!-- ES 모듈로 three.js, stats.js, dat.gui.js를 불러옴 -->
+    <script type="module">
+        import * as THREE from '../libs/three.module.js';
+        import Stats from '../libs/stats.module.js';
+        import { GUI } from '../libs/dat.gui.module.js';
+
+        function init() {
+            // 1) 성능 측정용 Stats 초기화
+            const stats = initStats();
+            // 2) Three.js의 장면(Scene) 생성
+            const scene = new THREE.Scene();
+            //    - scene.overrideMaterial:
+            //      씬 전체에 "하나의 재질"을 강제로 적용
+            //      이 설정이 있으면 모든 메시는 overrideMaterial로 렌더링됨
+            scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
+
+            // 3) 카메라 생성
+            //    - PerspectiveCamera(FOV, 종횡비, near, far)
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            //    - 카메라 위치 설정 (x=0, y=20, z=80)
+            camera.position.set(0, 20, 80);
+            //    - 카메라가 (0,0,0) 지점을 바라보게 설정
+            camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+            // 4) 렌더러(WebGLRenderer) 생성
+            const renderer = new THREE.WebGLRenderer();
+            //    - 배경색 설정: (0x020202)는 매우 어두운 회색에 가깝다
+            renderer.setClearColor(new THREE.Color(0x020202));
+            //    - 캔버스 크기 설정
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            //    - 그림자 계산 활성화
+            renderer.shadowMap.enabled = true;
+
+            // 5) 바닥(Plane) 생성
+            //    - 폭(planeWidth)=60, 높이(planeHeight)=40
+            const planeWidth = 60;
+            const planeHeight = 40;
+            const planeGeometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+            //    - MeshStandardMaterial:
+            //      roughness(거칠기), metalness(금속성)을 설정할 수 있는 재질
+            const planeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xB5B4A2,
+                roughness: 1.0, // 1.0이면 가장 거친 표면
+                metalness: 0    // 0이면 비금속
+            });
+            const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+            plane.receiveShadow = true;         //    - 바닥이 그림자를 받도록 설정
+            plane.rotation.x = -Math.PI / 2;    //    - plane을 수평으로 놓기 위해 x축을 기준으로 -90도(π/2) 회전
+            scene.add(plane);                   //    - 씬에 추가
+
+            // 6) 조명(AmbientLight) 추가
+            //    - 장면 전체에 은은한 빛(0x0c0c0c)을 준다
+            const ambientLight = new THREE.AmbientLight(0x0c0c0c);
+            scene.add(ambientLight);
+
+            // 7) 포인트 라이트(PointLight) 생성
+            //    - 색상(0xffffff), 세기(180), 거리(2000)
+            const pointLight = new THREE.PointLight(0xffffff, 180, 2000);
+            pointLight.position.set(0, 10, -1);         //    - 위치 설정 (x=0, y=10, z=-1)
+            pointLight.castShadow = true;               //    - 그림자 생성 가능하도록 설정
+
+            pointLight.shadow.mapSize.width = 1024;     //    - 그림자 해상도 설정(1024 x 1024)
+            pointLight.shadow.mapSize.height = 1024;
+            pointLight.shadow.camera.near = 0.1;        //    - 그림자를 계산할 카메라 범위
+            pointLight.shadow.camera.far = 100;
+
+            scene.add(pointLight);                      //    - 씬에 조명 추가
+
+            // 8) 렌더링 결과를 DOM에 추가
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+            // 9) GUI를 통한 컨트롤 설정
+            //    - rotationSpeed: 큐브가 회전하는 속도
+            //    - numberOfObjects: 장면 내 객체 개수
+            const controls = new function () {
+                this.rotationSpeed = 0.02;
+                this.numberOfObjects = scene.children.length;
+
+                // (1) 큐브 추가 함수
+                this.addCube = function () {
+                    // 1~3 사이 랜덤 크기의 큐브 생성
+                    var cubeSize = Math.ceil((Math.random() * 3));
+                    var cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+                    var cubeMaterial = new THREE.MeshLambertMaterial({ color: Math.random() * 0xffffff });
+                    var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+                    cube.castShadow = true;     //    - 그림자 생성                                          
+
+                    // 바닥 범위 계산
+                    var planeHalfWidth = planeGeometry.parameters.width / 2;
+                    var planeHalfHeight = planeGeometry.parameters.height / 2;
+
+                    //    - 큐브가 포인트 라이트와 일정 거리 이상 떨어진 곳에만 생성되도록 설정
+                    let x, z;
+                    let distance;
+                    const minDistance = 10;
+
+                    do {
+                        // plane의 -30~+30(x축), -20~+20(z축) 범위 안에서 랜덤
+                        x = plane.position.x - planeHalfWidth + Math.random() * planeGeometry.parameters.width;
+                        z = plane.position.z - planeHalfHeight + Math.random() * planeGeometry.parameters.height;
+
+                        // 포인트 라이트와 (x,z)의 거리 계산
+                        distance = Math.sqrt(
+                            Math.pow(x - pointLight.position.x, 2) +
+                            Math.pow(z - pointLight.position.z, 2)
+                        );
+                    } while (distance < minDistance); //    - minDistance보다 가까우면 재시도
+                    //    - 최종 위치 적용
+                    cube.position.x = x;
+                    cube.position.z = z;
+
+                    //    - y좌표: 0~15 사이(큐브 크기에 따라 최소 높이도 고려)
+                    const centerToCorner = (cubeSize / 2) * Math.sqrt(3);
+                    cube.position.y = centerToCorner + Math.random() * 15;
+
+                    scene.add(cube);                                 //    - 씬에 추가
+                    this.numberOfObjects = scene.children.length;    //    - 전체 객체 수 갱신
+                };
+
+                // (2) 큐브 제거 함수
+                this.removeCube = function () {
+                    var allChildren = scene.children;
+                    var lastObject = allChildren[allChildren.length - 1];
+                    if (lastObject instanceof THREE.Mesh) {
+                        scene.remove(lastObject);
+                        this.numberOfObjects = scene.children.length;
+                    }
+                };
+
+                // (3) 디버깅용: 콘솔에 씬의 자식 목록 출력
+                this.outputObjects = function () {
+                    console.log(scene.children);
+                }
+            };
+
+            // 10) dat.GUI를 통해 컨트롤 항목을 GUI에 배치
+            const gui = new GUI();
+            gui.add(controls, 'rotationSpeed', 0, 0.5);
+            gui.add(controls, 'addCube');
+            gui.add(controls, 'removeCube');
+            gui.add(controls, 'outputObjects');
+            gui.add(controls, 'numberOfObjects').listen();
+
+            // 11) 렌더링 시작
+            render();
+
+            // 12) 렌더링 함수 정의
+            function render() {
+                stats.update(); //   - FPS 값 갱신
+
+                //   - scene.traverse: 씬 내의 모든 객체를 순회
+                scene.traverse(function (e) {
+                    //     - plane이 아닌 Mesh에 한해서 회전 애니메이션 적용
+                    if (e instanceof THREE.Mesh && e != plane) {
+                        e.rotation.x += controls.rotationSpeed;
+                        e.rotation.y += controls.rotationSpeed;
+                        e.rotation.z += controls.rotationSpeed;
+                    }
+                });
+                //   - 다음 프레임 요청
+                requestAnimationFrame(render);
+                //   - renderer로 씬+카메라 그리기
+                renderer.render(scene, camera);
+            }
+            // 13) Stats.js 초기화 함수
+            function initStats() {
+
+                var stats = new Stats();
+                stats.showPanel(0);          //   - 0: fps 모드, 1: ms 모드
+                document.getElementById("Stats-output").appendChild(stats.dom);  //   - DOM을 페이지에 추가
+                return stats;
+            }
+        }
+        // 14) 페이지 로드가 끝나면 init() 호출
+        window.onload = init
+    </script>
+</body>
+
+</html>
